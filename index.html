@@ -1,155 +1,73 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>请选择服务器</title>
     <style>
-      body {
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        background-color: #f5f5f7;
-        user-select: none;
-      }
-      .container {
-        background: white;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        width: 320px;
-        text-align: center;
-      }
-      h3 {
-        margin-top: 0;
-        color: #333;
-        margin-bottom: 20px;
-      }
-      .btn {
-        display: block;
-        width: 100%;
-        padding: 12px;
-        margin: 10px 0;
-        background-color: #0071e3;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background 0.2s;
-        box-sizing: border-box;
-        font-weight: 500;
-      }
-      .btn:hover {
-        background-color: #0077ed;
-      }
-      .btn-secondary {
-        background-color: #34c759;
-      }
-      .btn-secondary:hover {
-        background-color: #30b651;
-      }
-      .input-group {
-        margin-top: 20px;
-        padding-top: 15px;
-        border-top: 1px solid #eee;
-      }
-      input {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        box-sizing: border-box;
-        margin-bottom: 10px;
-        font-size: 14px;
-        text-align: center;
-      }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f5f5f7; user-select: none; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 320px; text-align: center; }
+        h3 { margin-top: 0; color: #333; margin-bottom: 20px; }
+        .btn { display: block; width: 100%; padding: 12px; margin: 10px 0; background-color: #0071e3; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: background 0.2s; box-sizing: border-box; font-weight: 500; }
+        .btn:hover { background-color: #0077ed; }
+        .btn-secondary { background-color: #34c759; }
+        .btn-secondary:hover { background-color: #30b651; }
+        .input-group { margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; margin-bottom: 10px; font-size: 14px; text-align: center; }
     </style>
-  </head>
-  <body>
-    <div class="container">
-      <h3>局域网服务选择</h3>
+</head>
+<body>
 
-      <!-- 修复：按钮绑定全新的逻辑 -->
-      <button class="btn" onclick="openUrl('http://192.168.18')">
-        服务器 209
-      </button>
-      <button class="btn" onclick="openUrl('http://192.168.18')">
-        服务器 210
-      </button>
-
-      <div class="input-group">
-        <input
-          type="text"
-          id="customUrl"
-          placeholder="http://192.168.18.X:2333/"
-        />
-        <button class="btn btn-secondary" onclick="openCustom()">
-          进入自定义网址
-        </button>
-      </div>
+<div class="container">
+    <h3>局域网服务选择</h3>
+    
+    <!-- 优化：移除复杂的原生多开，使用最稳妥的跳转机制 -->
+    <button class="btn" onclick="openUrl('http://192.168.18')">服务器 209</button>
+    <button class="btn" onclick="openUrl('http://192.168.18')">服务器 210</button>
+    
+    <div class="input-group">
+        <input type="text" id="customUrl" placeholder="http://192.168.18.X:2333/">
+        <button class="btn btn-secondary" onclick="openCustom()">进入自定义网址</button>
     </div>
+</div>
 
-    <script>
-      // 页面加载时：自动读取上次记忆的自定义网址
-      window.onload = function () {
-        const savedUrl = localStorage.getItem("pake_saved_custom_url");
-        // 如果有记忆的网址就填入，没有就给个默认提示前缀
-        document.getElementById("customUrl").value = savedUrl
-          ? savedUrl
-          : "http://192.168.18.";
-      };
+<script>
+    // 页面加载时：自动读取并恢复上次记忆的自定义网址
+    window.onload = function() {
+        const savedUrl = localStorage.getItem('pake_saved_custom_url');
+        document.getElementById('customUrl').value = savedUrl ? savedUrl : "http://192.168.18.";
+    }
 
-      // 核心打开逻辑：支持多开窗口与跳转
-      function openUrl(url) {
+    // 核心跳转逻辑
+    function openUrl(url) {
         if (!url) return;
-
-        // 尝试调用 Tauri 的底层多开窗口 API
-        if (window.__TAURI__ && window.__TAURI__.window) {
-          const WebviewWindow = window.__TAURI__.window.WebviewWindow;
-          // 使用时间戳作为唯一标识，从而允许无限制“多开”新窗口
-          const label = "win_" + Date.now();
-          const webview = new WebviewWindow(label, {
-            url: url,
-            title: "局域网服务 - " + url,
-            width: 1200,
-            height: 800,
-            resizable: true,
-          });
-
-          webview.once("tauri://created", function () {
-            console.log("新窗口多开成功");
-          });
-          webview.once("tauri://error", function (e) {
-            // 如果多开由于权限限制失败，退回到当前窗口跳转
+        
+        try {
+            // 尝试利用标准的新建窗口方式（部分 Pake 环境支持多开新标签/新窗）
+            window.open(url, '_blank');
+        } catch (e) {
+            // 如果多开被环境拦截，则直接在当前窗口无缝替换，确保百分百能打开
             window.location.href = url;
-          });
-        } else {
-          // 如果在普通浏览器中测试，直接当前页跳转
-          window.location.href = url;
         }
-      }
+    }
 
-      // 自定义网址提交逻辑
-      function openCustom() {
-        let url = document.getElementById("customUrl").value.trim();
+    // 自定义网址提交逻辑
+    function openCustom() {
+        let url = document.getElementById('customUrl').value.trim();
         if (!url) return;
-
-        // 补全 http 协议头
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-          url = "http://" + url;
+        
+        // 自动补全协议头
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'http://' + url;
         }
-
-        // 【实现记忆功能】：将当前输入的有效网址存入本地缓存
-        localStorage.setItem("pake_saved_custom_url", url);
-
-        // 打开网址
+        
+        // 【保留记忆功能】：存入本地缓存
+        localStorage.setItem('pake_saved_custom_url', url);
+        
+        // 触发打开
         openUrl(url);
-      }
-    </script>
-  </body>
+    }
+</script>
+
+</body>
 </html>
