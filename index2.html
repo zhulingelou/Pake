@@ -1,176 +1,319 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>双框架局域网服务</title>
     <style>
-        * { box-sizing: border-box; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f5f5f7; overflow: hidden; }
-        
-        /* 1. 导航选择界面样式 */
-        .nav-wrapper { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 10; background-color: #f5f5f7; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 420px; text-align: center; }
-        h3 { margin-top: 0; color: #333; margin-bottom: 20px; font-size: 20px; }
-        
-        .select-group { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; background: #f0f0f4; padding: 8px 12px; border-radius: 8px; }
-        .url-text { font-family: monospace; font-size: 14px; color: #333; font-weight: bold; }
-        .select-box { padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px; background: white; cursor: pointer; }
-        
-        .btn-confirm { display: block; width: 100%; padding: 14px; margin-top: 25px; background-color: #0071e3; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: background 0.2s; font-weight: bold; }
-        .btn-confirm:hover { background-color: #0077ed; }
-        
-        .input-group { margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; text-align: left; }
-        .input-label { font-size: 12px; color: #666; margin-bottom: 6px; display: block; font-weight: 500; }
-        .custom-row { display: flex; gap: 8px; }
-        input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; font-family: monospace; }
-        .select-box-custom { width: 85px; }
+      * {
+        box-sizing: border-box;
+      }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: #f5f5f7;
+        overflow: hidden;
+      }
 
-        /* 2. 双分屏框架布局样式 */
-        .split-screen-container { display: flex; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; display: none; }
-        .frame-wrapper { width: 50%; height: 100%; position: relative; border: none; }
-        /* 在两屏中间加一条明显的分割线 */
-        .frame-wrapper:first-child { border-right: 2px solid #ccc; } 
-        iframe { width: 100%; height: 100%; border: none; }
-        
-        /* 3. 悬浮切换服务器按钮 */
-        .back-floating-btn { position: fixed; bottom: 20px; right: 20px; z-index: 999; padding: 12px 20px; background: rgba(0, 0, 0, 0.85); color: white; border: none; border-radius: 25px; cursor: pointer; font-size: 14px; display: none; backdrop-filter: blur(4px); transition: background 0.2s; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        .back-floating-btn:hover { background: #000; }
+      /* 1. 导航选择界面样式 */
+      .nav-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10;
+        background-color: #f5f5f7;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        width: 420px;
+        text-align: center;
+      }
+      h3 {
+        margin-top: 0;
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 20px;
+      }
+
+      .select-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 12px 0;
+        background: #f0f0f4;
+        padding: 8px 12px;
+        border-radius: 8px;
+      }
+      .url-text {
+        font-family: monospace;
+        font-size: 14px;
+        color: #333;
+        font-weight: bold;
+      }
+      .select-box {
+        padding: 6px 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 13px;
+        background: white;
+        cursor: pointer;
+      }
+
+      .btn-confirm {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        margin-top: 25px;
+        background-color: #0071e3;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.2s;
+        font-weight: bold;
+      }
+      .btn-confirm:hover {
+        background-color: #0077ed;
+      }
+
+      .input-group {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+        text-align: left;
+      }
+      .input-label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 6px;
+        display: block;
+        font-weight: 500;
+      }
+      .custom-row {
+        display: flex;
+        gap: 8px;
+      }
+      input {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 13px;
+        font-family: monospace;
+      }
+      .select-box-custom {
+        width: 85px;
+      }
+
+      /* 2. 双分屏框架布局样式 */
+      .split-screen-container {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        display: none;
+      }
+      .frame-wrapper {
+        width: 50%;
+        height: 100%;
+        position: relative;
+        border: none;
+      }
+      /* 在两屏中间加一条明显的分割线 */
+      .frame-wrapper:first-child {
+        border-right: 2px solid #ccc;
+      }
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      /* 3. 悬浮切换服务器按钮 */
+      .back-floating-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 999;
+        padding: 12px 20px;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 14px;
+        display: none;
+        backdrop-filter: blur(4px);
+        transition: background 0.2s;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+      .back-floating-btn:hover {
+        background: #000;
+      }
     </style>
-</head>
-<body>
-
-<!-- 选择配置主界面 -->
-<div class="nav-wrapper" id="navWrapper">
-    <div class="container">
+  </head>
+  <body>
+    <!-- 选择配置主界面 -->
+    <div class="nav-wrapper" id="navWrapper">
+      <div class="container">
         <h3>配置双屏显示网址</h3>
-        
+
         <!-- 网址 145 配置 -->
         <div class="select-group">
-            <span class="url-text">192.168.18.145:2333</span>
-            <select class="select-box" id="pos_145">
-                <option value="left">显示在左</option>
-                <option value="right">显示在右</option>
-                <option value="none" selected>不显示</option>
-            </select>
+          <span class="url-text">192.168.18.145:2333</span>
+          <select class="select-box" id="pos_145">
+            <option value="left">显示在左</option>
+            <option value="right">显示在右</option>
+            <option value="none" selected>不显示</option>
+          </select>
         </div>
-        
+
         <!-- 网址 209 配置 -->
         <div class="select-group">
-            <span class="url-text">192.168.18.209:2333</span>
-            <select class="select-box" id="pos_209">
-                <option value="left" selected>显示在左</option>
-                <option value="right">显示在右</option>
-                <option value="none">不显示</option>
-            </select>
+          <span class="url-text">192.168.18.209:2333</span>
+          <select class="select-box" id="pos_209">
+            <option value="left" selected>显示在左</option>
+            <option value="right">显示在右</option>
+            <option value="none">不显示</option>
+          </select>
         </div>
-        
+
         <!-- 网址 210 配置 -->
         <div class="select-group">
-            <span class="url-text">192.168.18.210:2333</span>
-            <select class="select-box" id="pos_210">
-                <option value="left">显示在左</option>
-                <option value="right" selected>显示在右</option>
-                <option value="none">不显示</option>
-            </select>
+          <span class="url-text">192.168.18.210:2333</span>
+          <select class="select-box" id="pos_210">
+            <option value="left">显示在左</option>
+            <option value="right" selected>显示在右</option>
+            <option value="none">不显示</option>
+          </select>
         </div>
-        
+
         <!-- 自定义其它网址配置与记忆 -->
         <div class="input-group">
-            <label class="input-label">自定义其它网址：</label>
-            <div class="custom-row">
-                <input type="text" id="customUrl" placeholder="http://192.168.18.X:2333">
-                <select class="select-box select-box-custom" id="pos_custom">
-                    <option value="left">显示在左</option>
-                    <option value="right">显示在右</option>
-                    <option value="none" selected>不显示</option>
-                </select>
-            </div>
+          <label class="input-label">自定义其它网址：</label>
+          <div class="custom-row">
+            <input
+              type="text"
+              id="customUrl"
+              placeholder="http://192.168.18.X:2333"
+            />
+            <select class="select-box select-box-custom" id="pos_custom">
+              <option value="left">显示在左</option>
+              <option value="right">显示在右</option>
+              <option value="none" selected>不显示</option>
+            </select>
+          </div>
         </div>
-        
-        <button class="btn-confirm" onclick="startSplitScreen()">确认并同时打开双屏</button>
+
+        <button class="btn-confirm" onclick="startSplitScreen()">
+          确认并同时打开双屏
+        </button>
+      </div>
     </div>
-</div>
 
-<!-- 双框架容器 -->
-<div class="split-screen-container" id="splitContainer">
-    <div class="frame-wrapper"><iframe id="leftFrame" src=""></iframe></div>
-    <div class="frame-wrapper"><iframe id="rightFrame" src=""></iframe></div>
-</div>
+    <!-- 双框架容器 -->
+    <div class="split-screen-container" id="splitContainer">
+      <div class="frame-wrapper"><iframe id="leftFrame" src=""></iframe></div>
+      <div class="frame-wrapper"><iframe id="rightFrame" src=""></iframe></div>
+    </div>
 
-<!-- 切换服务器按钮 -->
-<button class="back-floating-btn" id="backBtn" onclick="goBackToNav()">重新配置服务器 ↩</button>
+    <!-- 切换服务器按钮 -->
+    <button class="back-floating-btn" id="backBtn" onclick="goBackToNav()">
+      重新配置服务器 ↩
+    </button>
 
-<script>
-    // 恢复记忆的自定义网址
-    window.onload = function() {
-        const savedUrl = localStorage.getItem('pake_saved_custom_url');
-        document.getElementById('customUrl').value = savedUrl ? savedUrl : "http://192.168.18.";
-    }
+    <script>
+      // 恢复记忆的自定义网址
+      window.onload = function () {
+        const savedUrl = localStorage.getItem("pake_saved_custom_url");
+        document.getElementById("customUrl").value = savedUrl
+          ? savedUrl
+          : "http://192.168.18.";
+      };
 
-    // 核心启动分屏逻辑
-    function startSplitScreen() {
+      // 核心启动分屏逻辑
+      function startSplitScreen() {
         let leftUrl = "";
         let rightUrl = "";
 
         // 默认的 3 个网址
         const urls = {
-            '145': 'http://192.168.18.145:2333',
-            '209': 'http://192.168.18.209:2333',
-            '210': 'http://192.168.18.210:2333'
+          145: "http://192.168.18.145:2333",
+          209: "http://192.168.18.209:2333",
+          210: "http://192.168.18.210:2333",
         };
 
         // 1. 检查默认 3 个网址分配情况
-        ['145', '209', '210'].forEach(key => {
-            const pos = document.getElementById('pos_' + key).value;
-            if (pos === 'left') leftUrl = urls[key];
-            if (pos === 'right') rightUrl = urls[key];
+        ["145", "209", "210"].forEach((key) => {
+          const pos = document.getElementById("pos_" + key).value;
+          if (pos === "left") leftUrl = urls[key];
+          if (pos === "right") rightUrl = urls[key];
         });
 
         // 2. 检查自定义网址分配情况
-        let customUrl = document.getElementById('customUrl').value.trim();
+        let customUrl = document.getElementById("customUrl").value.trim();
         if (customUrl && customUrl !== "http://192.168.18.") {
-            if (!customUrl.startsWith('http://') && !customUrl.startsWith('https://')) {
-                customUrl = 'http://' + customUrl;
-            }
-            // 记住输入的自定义网址
-            localStorage.setItem('pake_saved_custom_url', customUrl);
+          if (
+            !customUrl.startsWith("http://") &&
+            !customUrl.startsWith("https://")
+          ) {
+            customUrl = "http://" + customUrl;
+          }
+          // 记住输入的自定义网址
+          localStorage.setItem("pake_saved_custom_url", customUrl);
 
-            const customPos = document.getElementById('pos_custom').value;
-            if (customPos === 'left') leftUrl = customUrl;
-            if (customPos === 'right') rightUrl = customUrl;
+          const customPos = document.getElementById("pos_custom").value;
+          if (customPos === "left") leftUrl = customUrl;
+          if (customPos === "right") rightUrl = customUrl;
         }
 
         // 如果两边都没选网址，不执行
         if (!leftUrl && !rightUrl) {
-            alert("请至少为左屏或右屏选择一个要打开的网址！");
-            return;
+          alert("请至少为左屏或右屏选择一个要打开的网址！");
+          return;
         }
 
         // 3. 渲染视图
-        const leftFrame = document.getElementById('leftFrame');
-        const rightFrame = document.getElementById('rightFrame');
-        
+        const leftFrame = document.getElementById("leftFrame");
+        const rightFrame = document.getElementById("rightFrame");
+
         // 如果某一侧没选，就加载空白页，或者你可以让它两侧加载同一个
         leftFrame.src = leftUrl ? leftUrl : "about:blank";
         rightFrame.src = rightUrl ? rightUrl : "about:blank";
 
         // 显示双屏界面和切换按钮，隐藏配置菜单
-        document.getElementById('splitContainer').style.display = "flex";
-        document.getElementById('backBtn').style.display = "block";
-        document.getElementById('navWrapper').style.display = "none";
-    }
+        document.getElementById("splitContainer").style.display = "flex";
+        document.getElementById("backBtn").style.display = "block";
+        document.getElementById("navWrapper").style.display = "none";
+      }
 
-    // 返回到配置菜单
-    function goBackToNav() {
-        document.getElementById('leftFrame').src = "about:blank";
-        document.getElementById('rightFrame').src = "about:blank";
-        
-        document.getElementById('splitContainer').style.display = "none";
-        document.getElementById('backBtn').style.display = "none";
-        document.getElementById('navWrapper').style.display = "flex";
-    }
-</script>
+      // 返回到配置菜单
+      function goBackToNav() {
+        document.getElementById("leftFrame").src = "about:blank";
+        document.getElementById("rightFrame").src = "about:blank";
 
-</body>
+        document.getElementById("splitContainer").style.display = "none";
+        document.getElementById("backBtn").style.display = "none";
+        document.getElementById("navWrapper").style.display = "flex";
+      }
+    </script>
+  </body>
 </html>
